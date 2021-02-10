@@ -1,67 +1,105 @@
-import React, { Component } from 'react'
-
-// Components
-import Navbar from './Component/navbar';
-import Movies from './Component/movies';
-import Footer from './Component/footer';
-import Carousel from "./Component/carousel";
-
-// Images
-import Image1 from './images/img1.png';
-import Image2 from './images/img2.jpg';
-import Image3 from './images/img3.jpg';
-import Image4 from './images/img4.jpg';
+import React, { useReducer, useEffect } from "react";
+import "./App.css";
+import Header from "./components/Header";
+import Movie from "./components/Movie";
+import Search from "./components/Search";
 
 
+const API_KEY = "65525897";
+
+const MOVIE_API_URL = `https://www.omdbapi.com/?s=man&apikey=${API_KEY}`;
+
+const initialState = {
+  loading: true,
+  movies: [],
+  errorMessage: null
+};
 
 
-export default class App extends Component {
-
-  render() {
-    return (
-      <div>
-        <Navbar/>
-        <div className="App">
-      <Carousel></Carousel>
-      {/* Phone Models */}
-      <div className="container-fluid">
-        <div className="row mx-auto justify-content-center">
-        <Movies
-            name='Forrest Gump'
-            year='1994'
-            imdb='9.2'
-            image={Image1}/>
-
-          <Movies
-            name='Pulp Fiction'
-            year='1972'
-            imdb='9.1'
-            image={Image2}/>
-
-          <Movies
-            name='The Dark Knight'
-            year='2008'
-            imdb='9.0'
-            image={Image3}/>
-
-          <Movies
-            name='12 Angry Men'
-            year='1957'
-            imdb='8.9'
-            image={Image4}/>
-
-          <Movies
-            name='Schindlers List'
-            imdb='8.9'/>
-        </div>
-      </div>
-      <div className="container my-5">
-      </div>
-      {/* Footer */}
-      <Footer></Footer>
-    </div>
-      </div>
-    )
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "SEARCH_MOVIES_REQUEST":
+      return {
+        ...state,
+        loading: true,
+        errorMessage: null
+      };
+    case "SEARCH_MOVIES_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        movies: action.payload
+      };
+    case "SEARCH_MOVIES_FAILURE":
+      return {
+        ...state,
+        loading: false,
+        errorMessage: action.error
+      };
+    default:
+      return state;
   }
-}
+};
 
+const App = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => {
+    fetch(MOVIE_API_URL)
+        .then(response => response.json())
+        .then(jsonResponse => {
+    
+        dispatch({
+            type: "SEARCH_MOVIES_SUCCESS",
+            payload: jsonResponse.Search
+      });
+    });
+  }, []);
+
+  const search = searchValue => {
+    dispatch({
+      type: "SEARCH_MOVIES_REQUEST"
+    });
+
+    fetch(`https://www.omdbapi.com/?s=${searchValue}&apikey=${API_KEY}`)
+    .then(response => response.json())
+    .then(jsonResponse => {
+      if (jsonResponse.Response === "True") {
+        dispatch({
+            type: "SEARCH_MOVIES_SUCCESS",
+            payload: jsonResponse.Search
+        });
+      } else {
+        dispatch({
+            type: "SEARCH_MOVIES_FAILURE",
+            error: jsonResponse.Error
+        });
+      }
+    });
+  };
+
+  const { movies, errorMessage, loading } = state;
+
+  return (
+    <div className="App">
+      <div className="Nav">
+        <Header text="React with Hook" />
+        <Search search={search} />
+      </div>
+      <p className="App-intro">Some of the movies in the list</p>
+      <div className="movies">
+        {loading && !errorMessage ? (
+          <span className="loader"></span>
+        ) : errorMessage ? (
+          <div className="errorMessage">{errorMessage}</div>
+        ) : (
+          movies.map((movie, index) => (
+            <Movie key={`${index}-${movie.Title}`} movie={movie} />
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;
