@@ -1,10 +1,12 @@
 import React, { useReducer, useEffect } from "react";
 import "./App.css";
+
+/* Components */
 import Header from "./components/Header";
 import Movie from "./components/Movie";
 import Search from "./components/Search";
 
-
+/* API */
 const API_KEY = "65525897";
 
 const MOVIE_API_URL = `https://www.omdbapi.com/?s=man&apikey=${API_KEY}`;
@@ -60,7 +62,7 @@ const App = () => {
     dispatch({
       type: "SEARCH_MOVIES_REQUEST"
     });
-
+/* Fetching the data */
     fetch(`https://www.omdbapi.com/?s=${searchValue}&apikey=${API_KEY}`)
     .then(response => response.json())
     .then(jsonResponse => {
