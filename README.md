@@ -1,5 +1,7 @@
 # Getting Started with Create React App
 
+[Click here for the demo](https://cocky-turing-dc1207.netlify.app/)
+
 ![screenshot](./mock2.png)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
